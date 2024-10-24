@@ -1,0 +1,271 @@
+-- bizflow.Permission definition
+
+CREATE TABLE `Permission` (
+  `permission_id` int NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL,
+  `description` text,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`permission_id`)
+);
+
+
+-- bizflow.SubscriptionPlan definition
+
+CREATE TABLE `SubscriptionPlan` (
+  `plan_id` int NOT NULL AUTO_INCREMENT,
+  `plan_name` varchar(255) NOT NULL,
+  `duration_months` int NOT NULL,
+  `price` decimal(10,2) NOT NULL,
+  `description` text,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`plan_id`)
+);
+
+
+-- bizflow.Tenant definition
+
+CREATE TABLE `Tenant` (
+  `tenant_id` int NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL,
+  `contact_person` varchar(255) DEFAULT NULL,
+  `phone` varchar(50) DEFAULT NULL,
+  `email` varchar(255) DEFAULT NULL,
+  `address` text,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`tenant_id`)
+);
+
+
+-- bizflow.Category definition
+
+CREATE TABLE `Category` (
+  `category_id` int NOT NULL AUTO_INCREMENT,
+  `tenant_id` int NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `description` text,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`category_id`),
+  KEY `tenant_id` (`tenant_id`),
+  CONSTRAINT `category_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `Tenant` (`tenant_id`)
+) ;
+
+
+-- bizflow.Menu definition
+
+CREATE TABLE `Menu` (
+  `menu_id` int NOT NULL AUTO_INCREMENT,
+  `tenant_id` int NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `parent_menu_id` int DEFAULT NULL,
+  `url` varchar(255) DEFAULT NULL,
+  `icon` varchar(255) DEFAULT NULL,
+  `is_active` tinyint(1) DEFAULT '1',
+  `order_index` int DEFAULT '0',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`menu_id`),
+  KEY `tenant_id` (`tenant_id`),
+  KEY `parent_menu_id` (`parent_menu_id`),
+  CONSTRAINT `menu_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `Tenant` (`tenant_id`),
+  CONSTRAINT `menu_ibfk_2` FOREIGN KEY (`parent_menu_id`) REFERENCES `Menu` (`menu_id`)
+) ;
+
+
+-- bizflow.MenuPermission definition
+
+CREATE TABLE `MenuPermission` (
+  `menu_permission_id` int NOT NULL AUTO_INCREMENT,
+  `menu_id` int NOT NULL,
+  `permission_id` int NOT NULL,
+  PRIMARY KEY (`menu_permission_id`),
+  KEY `menu_id` (`menu_id`),
+  KEY `permission_id` (`permission_id`),
+  CONSTRAINT `menupermission_ibfk_1` FOREIGN KEY (`menu_id`) REFERENCES `Menu` (`menu_id`),
+  CONSTRAINT `menupermission_ibfk_2` FOREIGN KEY (`permission_id`) REFERENCES `Permission` (`permission_id`)
+) ;
+
+
+-- bizflow.`Role` definition
+
+CREATE TABLE `Role` (
+  `role_id` int NOT NULL AUTO_INCREMENT,
+  `tenant_id` int NOT NULL,
+  `role_name` varchar(255) NOT NULL,
+  `description` text,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`role_id`),
+  KEY `tenant_id` (`tenant_id`),
+  CONSTRAINT `role_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `Tenant` (`tenant_id`)
+) ;
+
+
+-- bizflow.RolePermission definition
+
+CREATE TABLE `RolePermission` (
+  `role_permission_id` int NOT NULL AUTO_INCREMENT,
+  `role_id` int NOT NULL,
+  `permission_id` int NOT NULL,
+  PRIMARY KEY (`role_permission_id`),
+  KEY `role_id` (`role_id`),
+  KEY `permission_id` (`permission_id`),
+  CONSTRAINT `rolepermission_ibfk_1` FOREIGN KEY (`role_id`) REFERENCES `Role` (`role_id`),
+  CONSTRAINT `rolepermission_ibfk_2` FOREIGN KEY (`permission_id`) REFERENCES `Permission` (`permission_id`)
+) ;
+
+
+-- bizflow.Supplier definition
+
+CREATE TABLE `Supplier` (
+  `supplier_id` int NOT NULL AUTO_INCREMENT,
+  `tenant_id` int NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `contact_person` varchar(255) DEFAULT NULL,
+  `phone` varchar(50) DEFAULT NULL,
+  `email` varchar(255) DEFAULT NULL,
+  `address` text,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`supplier_id`),
+  KEY `tenant_id` (`tenant_id`),
+  CONSTRAINT `supplier_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `Tenant` (`tenant_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+
+-- bizflow.TenantSubscription definition
+
+CREATE TABLE `TenantSubscription` (
+  `subscription_id` int NOT NULL AUTO_INCREMENT,
+  `tenant_id` int NOT NULL,
+  `plan_id` int NOT NULL,
+  `start_date` date NOT NULL,
+  `end_date` date NOT NULL,
+  `is_active` tinyint(1) DEFAULT '1',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`subscription_id`),
+  KEY `tenant_id` (`tenant_id`),
+  KEY `plan_id` (`plan_id`),
+  CONSTRAINT `tenantsubscription_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `Tenant` (`tenant_id`),
+  CONSTRAINT `tenantsubscription_ibfk_2` FOREIGN KEY (`plan_id`) REFERENCES `SubscriptionPlan` (`plan_id`)
+);
+
+
+-- bizflow.`User` definition
+
+CREATE TABLE `User` (
+  `user_id` int NOT NULL AUTO_INCREMENT,
+  `tenant_id` int NOT NULL,
+  `username` varchar(255) NOT NULL,
+  `password_hash` varchar(255) NOT NULL,
+  `full_name` varchar(255) DEFAULT NULL,
+  `email` varchar(255) DEFAULT NULL,
+  `is_active` tinyint(1) DEFAULT '1',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`user_id`),
+  UNIQUE KEY `username` (`username`),
+  KEY `tenant_id` (`tenant_id`),
+  CONSTRAINT `user_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `Tenant` (`tenant_id`)
+) ;
+
+
+-- bizflow.UserRole definition
+
+CREATE TABLE `UserRole` (
+  `user_role_id` int NOT NULL AUTO_INCREMENT,
+  `user_id` int NOT NULL,
+  `role_id` int NOT NULL,
+  PRIMARY KEY (`user_role_id`),
+  KEY `user_id` (`user_id`),
+  KEY `role_id` (`role_id`),
+  CONSTRAINT `userrole_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `User` (`user_id`),
+  CONSTRAINT `userrole_ibfk_2` FOREIGN KEY (`role_id`) REFERENCES `Role` (`role_id`)
+) ;
+
+-- bizflow.Product definition
+
+CREATE TABLE `Product` (
+  `product_id` int NOT NULL AUTO_INCREMENT,
+  `tenant_id` int NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `description` text,
+  `category_id` int DEFAULT NULL,
+  `supplier_id` int DEFAULT NULL,
+  `unit_price` decimal(10,2) NOT NULL,
+  `sku` varchar(100) DEFAULT NULL,
+  `barcode` varchar(100) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`product_id`),
+  UNIQUE KEY `sku` (`sku`),
+  UNIQUE KEY `barcode` (`barcode`),
+  KEY `tenant_id` (`tenant_id`),
+  KEY `category_id` (`category_id`),
+  KEY `supplier_id` (`supplier_id`),
+  CONSTRAINT `product_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `Tenant` (`tenant_id`),
+  CONSTRAINT `product_ibfk_2` FOREIGN KEY (`category_id`) REFERENCES `Category` (`category_id`),
+  CONSTRAINT `product_ibfk_3` FOREIGN KEY (`supplier_id`) REFERENCES `Supplier` (`supplier_id`)
+) ;
+
+
+-- bizflow.StockMovement definition
+
+CREATE TABLE `StockMovement` (
+  `movement_id` int NOT NULL AUTO_INCREMENT,
+  `tenant_id` int NOT NULL,
+  `product_id` int NOT NULL,
+  `quantity` int NOT NULL,
+  `movement_type` enum('IN','OUT') NOT NULL,
+  `movement_date` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `reference` varchar(255) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`movement_id`),
+  KEY `tenant_id` (`tenant_id`),
+  KEY `product_id` (`product_id`),
+  CONSTRAINT `stockmovement_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `Tenant` (`tenant_id`),
+  CONSTRAINT `stockmovement_ibfk_2` FOREIGN KEY (`product_id`) REFERENCES `Product` (`product_id`)
+) ;
+
+
+-- bizflow.SubscriptionOrder definition
+
+CREATE TABLE `SubscriptionOrder` (
+  `subscription_order_id` int NOT NULL AUTO_INCREMENT,
+  `tenant_id` int NOT NULL,
+  `subscription_id` int NOT NULL,
+  `order_date` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `total_amount` decimal(10,2) NOT NULL,
+  `payment_status` enum('PENDING','COMPLETED','FAILED') DEFAULT 'PENDING',
+  PRIMARY KEY (`subscription_order_id`),
+  KEY `tenant_id` (`tenant_id`),
+  KEY `subscription_id` (`subscription_id`),
+  CONSTRAINT `subscriptionorder_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `Tenant` (`tenant_id`),
+  CONSTRAINT `subscriptionorder_ibfk_2` FOREIGN KEY (`subscription_id`) REFERENCES `TenantSubscription` (`subscription_id`)
+) ;
+
+
+-- bizflow.SubscriptionPayment definition
+
+CREATE TABLE `SubscriptionPayment` (
+  `subscription_payment_id` int NOT NULL AUTO_INCREMENT,
+  `subscription_order_id` int NOT NULL,
+  `payment_date` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `amount` decimal(10,2) NOT NULL,
+  `payment_method` enum('CREDIT_CARD','BANK_TRANSFER','PAYPAL') NOT NULL,
+  `payment_status` enum('PENDING','COMPLETED','FAILED') DEFAULT 'PENDING',
+  `transaction_reference` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`subscription_payment_id`),
+  KEY `subscription_order_id` (`subscription_order_id`),
+  CONSTRAINT `subscriptionpayment_ibfk_1` FOREIGN KEY (`subscription_order_id`) REFERENCES `SubscriptionOrder` (`subscription_order_id`)
+) ;
+
+-- bizflow.Inventory definition
+
+CREATE TABLE `Inventory` (
+  `inventory_id` int NOT NULL AUTO_INCREMENT,
+  `tenant_id` int NOT NULL,
+  `product_id` int NOT NULL,
+  `quantity` int NOT NULL DEFAULT '0',
+  `last_updated` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`inventory_id`),
+  KEY `tenant_id` (`tenant_id`),
+  KEY `product_id` (`product_id`),
+  CONSTRAINT `inventory_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `Tenant` (`tenant_id`),
+  CONSTRAINT `inventory_ibfk_2` FOREIGN KEY (`product_id`) REFERENCES `Product` (`product_id`)
+) ;
