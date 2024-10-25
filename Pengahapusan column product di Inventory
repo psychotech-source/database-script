@@ -7,3 +7,6 @@ DROP FOREIGN KEY inventory_ibfk_2;
 
 ALTER TABLE Inventory 
 DROP COLUMN product_id;
+
+ALTER TABLE Inventory 
+ADD COLUMN name VARCHAR(255)
