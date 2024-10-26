@@ -1,3 +1,30 @@
+-- bizflow.application_parameter definition
+
+CREATE TABLE `application_parameter` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `parameter_code` varchar(50) NOT NULL,
+  `parameter_value` varchar(100) NOT NULL,
+  `description` text,
+  `createdDate` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `createdBy` varchar(20) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+
+-- bizflow.master_tenant definition
+
+CREATE TABLE `master_tenant` (
+  `tenant_id` int NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL,
+  `contact_person` varchar(255) DEFAULT NULL,
+  `phone` varchar(50) DEFAULT NULL,
+  `email` varchar(255) DEFAULT NULL,
+  `address` text,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`tenant_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+
 -- bizflow.Permission definition
 
 CREATE TABLE `Permission` (
@@ -6,7 +33,7 @@ CREATE TABLE `Permission` (
   `description` text,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`permission_id`)
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 
 -- bizflow.SubscriptionPlan definition
@@ -19,26 +46,12 @@ CREATE TABLE `SubscriptionPlan` (
   `description` text,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`plan_id`)
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 
--- bizflow.Tenant definition
+-- bizflow.inventory_category definition
 
-CREATE TABLE `Tenant` (
-  `tenant_id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) NOT NULL,
-  `contact_person` varchar(255) DEFAULT NULL,
-  `phone` varchar(50) DEFAULT NULL,
-  `email` varchar(255) DEFAULT NULL,
-  `address` text,
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`tenant_id`)
-);
-
-
--- bizflow.Category definition
-
-CREATE TABLE `Category` (
+CREATE TABLE `inventory_category` (
   `category_id` int NOT NULL AUTO_INCREMENT,
   `tenant_id` int NOT NULL,
   `name` varchar(255) NOT NULL,
@@ -46,8 +59,25 @@ CREATE TABLE `Category` (
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`category_id`),
   KEY `tenant_id` (`tenant_id`),
-  CONSTRAINT `category_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `Tenant` (`tenant_id`)
-) ;
+  CONSTRAINT `inventory_category_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `master_tenant` (`tenant_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+
+-- bizflow.master_inventory definition
+
+CREATE TABLE `master_inventory` (
+  `inventory_id` int NOT NULL AUTO_INCREMENT,
+  `tenant_id` int NOT NULL,
+  `quantity` int NOT NULL DEFAULT '0',
+  `last_updated` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `name` varchar(255) DEFAULT NULL,
+  `created_date` datetime DEFAULT NULL,
+  `sku` varchar(255) DEFAULT NULL,
+  `description` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`inventory_id`),
+  KEY `tenant_id` (`tenant_id`),
+  CONSTRAINT `master_inventory_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `master_tenant` (`tenant_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 
 -- bizflow.Menu definition
@@ -65,23 +95,37 @@ CREATE TABLE `Menu` (
   PRIMARY KEY (`menu_id`),
   KEY `tenant_id` (`tenant_id`),
   KEY `parent_menu_id` (`parent_menu_id`),
-  CONSTRAINT `menu_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `Tenant` (`tenant_id`),
+  CONSTRAINT `menu_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `master_tenant` (`tenant_id`),
   CONSTRAINT `menu_ibfk_2` FOREIGN KEY (`parent_menu_id`) REFERENCES `Menu` (`menu_id`)
-) ;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 
--- bizflow.MenuPermission definition
+-- bizflow.menu_permission definition
 
-CREATE TABLE `MenuPermission` (
+CREATE TABLE `menu_permission` (
   `menu_permission_id` int NOT NULL AUTO_INCREMENT,
   `menu_id` int NOT NULL,
   `permission_id` int NOT NULL,
   PRIMARY KEY (`menu_permission_id`),
   KEY `menu_id` (`menu_id`),
   KEY `permission_id` (`permission_id`),
-  CONSTRAINT `menupermission_ibfk_1` FOREIGN KEY (`menu_id`) REFERENCES `Menu` (`menu_id`),
-  CONSTRAINT `menupermission_ibfk_2` FOREIGN KEY (`permission_id`) REFERENCES `Permission` (`permission_id`)
-) ;
+  CONSTRAINT `menu_permission_ibfk_1` FOREIGN KEY (`menu_id`) REFERENCES `Menu` (`menu_id`),
+  CONSTRAINT `menu_permission_ibfk_2` FOREIGN KEY (`permission_id`) REFERENCES `Permission` (`permission_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+
+-- bizflow.product_category definition
+
+CREATE TABLE `product_category` (
+  `category_id` int NOT NULL AUTO_INCREMENT,
+  `tenant_id` int NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `description` text,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`category_id`),
+  KEY `tenant_id` (`tenant_id`),
+  CONSTRAINT `product_category_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `master_tenant` (`tenant_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 
 -- bizflow.`Role` definition
@@ -94,22 +138,22 @@ CREATE TABLE `Role` (
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`role_id`),
   KEY `tenant_id` (`tenant_id`),
-  CONSTRAINT `role_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `Tenant` (`tenant_id`)
-) ;
+  CONSTRAINT `role_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `master_tenant` (`tenant_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 
--- bizflow.RolePermission definition
+-- bizflow.role_permission definition
 
-CREATE TABLE `RolePermission` (
+CREATE TABLE `role_permission` (
   `role_permission_id` int NOT NULL AUTO_INCREMENT,
   `role_id` int NOT NULL,
   `permission_id` int NOT NULL,
   PRIMARY KEY (`role_permission_id`),
   KEY `role_id` (`role_id`),
   KEY `permission_id` (`permission_id`),
-  CONSTRAINT `rolepermission_ibfk_1` FOREIGN KEY (`role_id`) REFERENCES `Role` (`role_id`),
-  CONSTRAINT `rolepermission_ibfk_2` FOREIGN KEY (`permission_id`) REFERENCES `Permission` (`permission_id`)
-) ;
+  CONSTRAINT `role_permission_ibfk_1` FOREIGN KEY (`role_id`) REFERENCES `Role` (`role_id`),
+  CONSTRAINT `role_permission_ibfk_2` FOREIGN KEY (`permission_id`) REFERENCES `Permission` (`permission_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 
 -- bizflow.Supplier definition
@@ -125,13 +169,13 @@ CREATE TABLE `Supplier` (
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`supplier_id`),
   KEY `tenant_id` (`tenant_id`),
-  CONSTRAINT `supplier_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `Tenant` (`tenant_id`)
+  CONSTRAINT `supplier_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `master_tenant` (`tenant_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 
--- bizflow.TenantSubscription definition
+-- bizflow.tenant_subscription definition
 
-CREATE TABLE `TenantSubscription` (
+CREATE TABLE `tenant_subscription` (
   `subscription_id` int NOT NULL AUTO_INCREMENT,
   `tenant_id` int NOT NULL,
   `plan_id` int NOT NULL,
@@ -142,14 +186,14 @@ CREATE TABLE `TenantSubscription` (
   PRIMARY KEY (`subscription_id`),
   KEY `tenant_id` (`tenant_id`),
   KEY `plan_id` (`plan_id`),
-  CONSTRAINT `tenantsubscription_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `Tenant` (`tenant_id`),
-  CONSTRAINT `tenantsubscription_ibfk_2` FOREIGN KEY (`plan_id`) REFERENCES `SubscriptionPlan` (`plan_id`)
-);
+  CONSTRAINT `tenant_subscription_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `master_tenant` (`tenant_id`),
+  CONSTRAINT `tenant_subscription_ibfk_2` FOREIGN KEY (`plan_id`) REFERENCES `SubscriptionPlan` (`plan_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 
--- bizflow.`User` definition
+-- bizflow.user_profile definition
 
-CREATE TABLE `User` (
+CREATE TABLE `user_profile` (
   `user_id` int NOT NULL AUTO_INCREMENT,
   `tenant_id` int NOT NULL,
   `username` varchar(255) NOT NULL,
@@ -161,22 +205,64 @@ CREATE TABLE `User` (
   PRIMARY KEY (`user_id`),
   UNIQUE KEY `username` (`username`),
   KEY `tenant_id` (`tenant_id`),
-  CONSTRAINT `user_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `Tenant` (`tenant_id`)
-) ;
+  CONSTRAINT `user_profile_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `master_tenant` (`tenant_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 
--- bizflow.UserRole definition
+-- bizflow.user_role definition
 
-CREATE TABLE `UserRole` (
+CREATE TABLE `user_role` (
   `user_role_id` int NOT NULL AUTO_INCREMENT,
   `user_id` int NOT NULL,
   `role_id` int NOT NULL,
   PRIMARY KEY (`user_role_id`),
   KEY `user_id` (`user_id`),
   KEY `role_id` (`role_id`),
-  CONSTRAINT `userrole_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `User` (`user_id`),
-  CONSTRAINT `userrole_ibfk_2` FOREIGN KEY (`role_id`) REFERENCES `Role` (`role_id`)
-) ;
+  CONSTRAINT `user_role_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user_profile` (`user_id`),
+  CONSTRAINT `user_role_ibfk_2` FOREIGN KEY (`role_id`) REFERENCES `Role` (`role_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+
+-- bizflow.inventory_transaction definition
+
+CREATE TABLE `inventory_transaction` (
+  `transaction_id` int NOT NULL AUTO_INCREMENT,
+  `item_id` int NOT NULL,
+  `transaction_type` enum('IN','OUT') NOT NULL,
+  `quantity` int NOT NULL,
+  `transaction_date` date NOT NULL,
+  `user_id` int NOT NULL,
+  `reason` varchar(255) DEFAULT NULL,
+  `expiry_date` date DEFAULT NULL,
+  `buying_price` decimal(10,2) DEFAULT NULL,
+  `tenant_id` int NOT NULL,
+  PRIMARY KEY (`transaction_id`),
+  KEY `item_id` (`item_id`),
+  KEY `user_id` (`user_id`),
+  KEY `tenant_id` (`tenant_id`),
+  CONSTRAINT `inventory_transaction_ibfk_1` FOREIGN KEY (`item_id`) REFERENCES `master_inventory` (`inventory_id`),
+  CONSTRAINT `inventory_transaction_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `user_profile` (`user_id`),
+  CONSTRAINT `inventory_transaction_ibfk_3` FOREIGN KEY (`tenant_id`) REFERENCES `master_tenant` (`tenant_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+
+-- bizflow.login_activity definition
+
+CREATE TABLE `login_activity` (
+  `token` varchar(255) NOT NULL,
+  `tenant_id` int NOT NULL,
+  `user_profile` int DEFAULT NULL,
+  `login_at` datetime DEFAULT NULL,
+  `expired_at` datetime DEFAULT NULL,
+  `user_agent` varchar(255) DEFAULT NULL,
+  `ip_address` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`token`),
+  KEY `user_profile` (`user_profile`),
+  KEY `tenant_id` (`tenant_id`),
+  CONSTRAINT `login_activity_ibfk_1` FOREIGN KEY (`user_profile`) REFERENCES `user_profile` (`user_id`),
+  CONSTRAINT `login_activity_ibfk_2` FOREIGN KEY (`tenant_id`) REFERENCES `master_tenant` (`tenant_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
 
 -- bizflow.Product definition
 
@@ -198,15 +284,15 @@ CREATE TABLE `Product` (
   KEY `tenant_id` (`tenant_id`),
   KEY `category_id` (`category_id`),
   KEY `supplier_id` (`supplier_id`),
-  CONSTRAINT `product_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `Tenant` (`tenant_id`),
-  CONSTRAINT `product_ibfk_2` FOREIGN KEY (`category_id`) REFERENCES `Category` (`category_id`),
+  CONSTRAINT `product_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `master_tenant` (`tenant_id`),
+  CONSTRAINT `product_ibfk_2` FOREIGN KEY (`category_id`) REFERENCES `product_category` (`category_id`),
   CONSTRAINT `product_ibfk_3` FOREIGN KEY (`supplier_id`) REFERENCES `Supplier` (`supplier_id`)
-) ;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 
--- bizflow.StockMovement definition
+-- bizflow.stock_movement definition
 
-CREATE TABLE `StockMovement` (
+CREATE TABLE `stock_movement` (
   `movement_id` int NOT NULL AUTO_INCREMENT,
   `tenant_id` int NOT NULL,
   `product_id` int NOT NULL,
@@ -218,14 +304,14 @@ CREATE TABLE `StockMovement` (
   PRIMARY KEY (`movement_id`),
   KEY `tenant_id` (`tenant_id`),
   KEY `product_id` (`product_id`),
-  CONSTRAINT `stockmovement_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `Tenant` (`tenant_id`),
-  CONSTRAINT `stockmovement_ibfk_2` FOREIGN KEY (`product_id`) REFERENCES `Product` (`product_id`)
-) ;
+  CONSTRAINT `stock_movement_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `master_tenant` (`tenant_id`),
+  CONSTRAINT `stock_movement_ibfk_2` FOREIGN KEY (`product_id`) REFERENCES `Product` (`product_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 
--- bizflow.SubscriptionOrder definition
+-- bizflow.subscription_order definition
 
-CREATE TABLE `SubscriptionOrder` (
+CREATE TABLE `subscription_order` (
   `subscription_order_id` int NOT NULL AUTO_INCREMENT,
   `tenant_id` int NOT NULL,
   `subscription_id` int NOT NULL,
@@ -235,14 +321,14 @@ CREATE TABLE `SubscriptionOrder` (
   PRIMARY KEY (`subscription_order_id`),
   KEY `tenant_id` (`tenant_id`),
   KEY `subscription_id` (`subscription_id`),
-  CONSTRAINT `subscriptionorder_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `Tenant` (`tenant_id`),
-  CONSTRAINT `subscriptionorder_ibfk_2` FOREIGN KEY (`subscription_id`) REFERENCES `TenantSubscription` (`subscription_id`)
-) ;
+  CONSTRAINT `subscription_order_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `master_tenant` (`tenant_id`),
+  CONSTRAINT `subscription_order_ibfk_2` FOREIGN KEY (`subscription_id`) REFERENCES `tenant_subscription` (`subscription_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 
--- bizflow.SubscriptionPayment definition
+-- bizflow.subscription_payment definition
 
-CREATE TABLE `SubscriptionPayment` (
+CREATE TABLE `subscription_payment` (
   `subscription_payment_id` int NOT NULL AUTO_INCREMENT,
   `subscription_order_id` int NOT NULL,
   `payment_date` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
@@ -252,20 +338,5 @@ CREATE TABLE `SubscriptionPayment` (
   `transaction_reference` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`subscription_payment_id`),
   KEY `subscription_order_id` (`subscription_order_id`),
-  CONSTRAINT `subscriptionpayment_ibfk_1` FOREIGN KEY (`subscription_order_id`) REFERENCES `SubscriptionOrder` (`subscription_order_id`)
-) ;
-
--- bizflow.Inventory definition
-
-CREATE TABLE `Inventory` (
-  `inventory_id` int NOT NULL AUTO_INCREMENT,
-  `tenant_id` int NOT NULL,
-  `product_id` int NOT NULL,
-  `quantity` int NOT NULL DEFAULT '0',
-  `last_updated` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`inventory_id`),
-  KEY `tenant_id` (`tenant_id`),
-  KEY `product_id` (`product_id`),
-  CONSTRAINT `inventory_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `Tenant` (`tenant_id`),
-  CONSTRAINT `inventory_ibfk_2` FOREIGN KEY (`product_id`) REFERENCES `Product` (`product_id`)
-) ;
+  CONSTRAINT `subscription_payment_ibfk_1` FOREIGN KEY (`subscription_order_id`) REFERENCES `subscription_order` (`subscription_order_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;

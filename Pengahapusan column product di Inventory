@@ -10,3 +10,10 @@ DROP COLUMN product_id;
 
 ALTER TABLE Inventory 
 ADD COLUMN name VARCHAR(255)
+
+ALTER table Inventory 
+ADD COLUMN created_date DATETIME
+
+
+ALTER table Inventory 
+ADD COLUMN sku VARCHAR(255);
