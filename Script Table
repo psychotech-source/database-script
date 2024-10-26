@@ -36,9 +36,9 @@ CREATE TABLE `Permission` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 
--- bizflow.SubscriptionPlan definition
+-- bizflow.subscription_plan definition
 
-CREATE TABLE `SubscriptionPlan` (
+CREATE TABLE `subscription_plan` (
   `plan_id` int NOT NULL AUTO_INCREMENT,
   `plan_name` varchar(255) NOT NULL,
   `duration_months` int NOT NULL,
@@ -187,7 +187,7 @@ CREATE TABLE `tenant_subscription` (
   KEY `tenant_id` (`tenant_id`),
   KEY `plan_id` (`plan_id`),
   CONSTRAINT `tenant_subscription_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `master_tenant` (`tenant_id`),
-  CONSTRAINT `tenant_subscription_ibfk_2` FOREIGN KEY (`plan_id`) REFERENCES `SubscriptionPlan` (`plan_id`)
+  CONSTRAINT `tenant_subscription_ibfk_2` FOREIGN KEY (`plan_id`) REFERENCES `subscription_plan` (`plan_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 
